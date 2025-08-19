@@ -10,9 +10,12 @@
 	<h1 class="main-header">Private Network Access</h1>
 	<div id="log-container"></div>
 	<div class="button-container">
-	<button id="add-logs-btn" class="add-btn">Sample Logs</button>
-	<button id="get-google-btn" class="add-btn">GET Google</button>
-	<button id="get-heartbeat-btn" class="add-btn">Call Heartbeat</button>
+	<button id="add-logs-btn" class="add-btn hidden">Sample Logs</button>
+	<button id="get-google-btn" class="add-btn">Get IP</button>
+	<button id="get-heartbeat-btn" class="add-btn hidden">Call Heartbeat</button>
+	<input id="api-url-input" class="api-url-input" type="text" placeholder="Enter API URL...">
+	<button id="get-api-url-btn" class="add-btn get-url-btn">GET URL</button>
+	<button id="no-cors-btn" class="add-btn get-url-btn">no CORS</button>
 	</div>
 	<script src="main.js"></script>
 </body>

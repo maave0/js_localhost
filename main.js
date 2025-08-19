@@ -1,3 +1,36 @@
+
+function getAPIUrl(cors = true) {
+    const input = document.getElementById('api-url-input');
+    if (!input) {
+        addLogLine('API URL input not found.');
+        return;
+    }
+    const url = input.value.trim();
+    if (!url) {
+        addLogLine('Please enter a URL.');
+        return;
+    }
+    let valid = false;
+    try {
+        // Accepts http(s):// and protocol-relative URLs
+        const u = new URL(url, window.location.origin);
+        valid = u.protocol === 'http:' || u.protocol === 'https:';
+    } catch (e) {
+        valid = false;
+    }
+    if (!valid) {
+        addLogLine('Invalid URL: ' + escapeHTML(url));
+        return;
+    }
+    callGetEndpoint(url, cors)
+        .then(result => {
+            addLogLine('GET ' + escapeHTML(url) + ' success: ' + getPreview(result));
+        })
+        .catch(error => {
+            addLogLine('GET ' + escapeHTML(url) + ' error: ' + error.message);
+        });
+}
+
 function getPreview(str, maxLen = 100) {
     if (typeof str !== 'string') return '';
     return str.length > maxLen ? str.substring(0, maxLen) + '...' : str;
@@ -7,44 +40,50 @@ function getPreview(str, maxLen = 100) {
 // will be blocked in the browser by CORS:  net::ERR_FAILED 200 (OK)
 // if CORS is allowed with `func host start --cors *` you get a 200 response and everything
 function getHeartbeat() {
-    callGetEndpoint('http://localhost:7071/api/heartbeat')
+    let endpoint1 = 'http://localhost:7071/api/heartbeat';
+    callGetEndpoint(endpoint1)
         .then(result => {
-            addLogLine('GET /api/heartbeat success: ' + getPreview(result));
+            addLogLine('GET ' + endpoint1 + ' success: ' + getPreview(result));
         })
         .catch(error => {
-            addLogLine('GET /api/heartbeat error: ' + error.message);
+            addLogLine('GET ' + endpoint1 + ' error: ' + error.message);
         });
 
-    callGetEndpoint('http://127.0.0.1:7071/api/heartbeat')
+    let endpoint2 = 'http://127.0.0.1:7071/api/heartbeat';
+    callGetEndpoint(endpoint2)
         .then(result => {
-            addLogLine('GET /api/heartbeat success: ' + getPreview(result));
+            addLogLine('GET ' + endpoint2 + ' success: ' + getPreview(result));
         })
         .catch(error => {
-            addLogLine('GET /api/heartbeat error: ' + error.message);
+            addLogLine('GET ' + endpoint2 + ' error: ' + error.message);
     });
 }
-// Function to GET google.com using callGetEndpoint, will fail due to CORS
-function getGoogle() {
-    callGetEndpoint('https://www.google.com')
+// Function to GET icanhazip.com using callGetEndpoint
+function getSampleAPI() {
+    callGetEndpoint('https://icanhazip.com')
         .then(result => {
-            addLogLine('GET google.com success: ' + getPreview(result));
+            addLogLine('GET icanhazip.com success: ' + getPreview(result));
         })
         .catch(error => {
-            addLogLine('GET google.com error: ' + error.message);
+            addLogLine('GET icanhazip.com error: ' + error.message);
         });
 }
 
 // Function to call a GET endpoint with a given URL
-async function callGetEndpoint(url) {
+async function callGetEndpoint(url, cors = true) {
     try {
-        const response = await fetch(url);
-        if (!response.ok) {
+        const fetchOptions = cors ? {} : { mode: 'no-cors' };
+        const response = await fetch(url, fetchOptions);
+        if (!response.ok && cors) {
             throw new Error('Network response was not ok: ' + response.status);
+        }
+        // In no-cors mode, response type is opaque and cannot be read
+        if (!cors && response.type === 'opaque') {
+            return '[no-cors request sent, response is opaque]';
         }
         return await response.text();
     } catch (error) {
         addLogLine('Request to ' + url + ' failed: ' + error.message);
-        
         throw error;
     }
 }
@@ -52,16 +91,13 @@ async function callGetEndpoint(url) {
 const logContainer = document.getElementById('log-container');
 
 function escapeHTML(str) {
-    return str.replace(/[&<>'"`=\/]/g, function (s) {
+    return str.replace(/[&<>'"]/g, function (s) {
         return ({
             '&': '&amp;',
             '<': '&lt;',
             '>': '&gt;',
             "'": '&#39;',
-            '"': '&quot;',
-            '`': '&#96;',
-            '=': '&#61;',
-            '/': '&#47;'
+            '"': '&quot;'
         })[s];
     });
 }
@@ -99,11 +135,20 @@ function eventListeners() {
     }
     const getGoogleBtn = document.getElementById('get-google-btn');
     if (getGoogleBtn) {
-        getGoogleBtn.addEventListener('click', getGoogle);
+        getGoogleBtn.addEventListener('click', getSampleAPI);
     }
     const getHeartbeatBtn = document.getElementById('get-heartbeat-btn');
     if (getHeartbeatBtn) {
         getHeartbeatBtn.addEventListener('click', getHeartbeat);
+    }
+    const getAPIUrlBtn = document.getElementById('get-api-url-btn');
+    if (getAPIUrlBtn) {
+        getAPIUrlBtn.addEventListener('click', getAPIUrl);
+    }
+
+    const noCORSBtn = document.getElementById('no-cors-btn');
+    if (noCORSBtn) {
+        noCORSBtn.addEventListener('click', function() { getAPIUrl(false); });
     }
 }
 
