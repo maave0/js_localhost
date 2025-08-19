@@ -69,36 +69,3 @@ function oligoXhrSample() {
         });
 }
 
-async function checkPortResponseTime(portNum) {
-  return new Promise((resolve) => {
-    const start = performance.now();
-    const ws = new WebSocket(`ws://127.0.0.1:${portNum}`);
-    const timeout = 3000;
-
-    let finished = false;
-
-    function finish(result) {
-      if (!finished) {
-        finished = true;
-        resolve(result);
-      }
-    }
-
-    ws.onopen = () => {
-      const elapsed = performance.now() - start;
-      ws.close();
-      finish({ port: portNum, open: true, timeMs: elapsed });
-    };
-
-    ws.onerror = () => {
-      const elapsed = performance.now() - start;
-      finish({ port: portNum, open: false, timeMs: elapsed });
-    };
-
-    // Fallback timeout if no response
-    setTimeout(() => {
-      finish({ port: portNum, open: false, timeMs: performance.now() - start });
-      try { ws.close(); } catch (e) {}
-    }, timeout);
-  });
-}
