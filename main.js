@@ -163,6 +163,11 @@ function testAddingText() {
 // Add event listener for the button
 function eventListeners() {
 
+    const checkPortBtn = document.getElementById('check-port-btn');
+    if (checkPortBtn) {
+        checkPortBtn.addEventListener('click', checkPort);
+    }
+
     const oligoXHRBtn = document.getElementById('oligo-xhr-btn');
     if (oligoXHRBtn) {
         oligoXHRBtn.addEventListener('click', getOligoXHR);
@@ -193,6 +198,47 @@ function eventListeners() {
     if (noCORSBtn) {
         noCORSBtn.addEventListener('click', function() { getAPIUrl(false); });
     }
+}
+
+// Calls checkPortResponseTime with the port from input and logs the result
+
+/* with HTTP server running vs nothing running:
+
+Port 7071 response: {"port":7071,"open":false,"timeMs":4.200000002980232}
+Port 7071 response: {"port":7071,"open":false,"timeMs":3.2999999970197678}
+Port 7071 response: {"port":7071,"open":false,"timeMs":3.4000000059604645}
+Port 7071 response: {"port":7071,"open":false,"timeMs":2045.3999999910593}
+Port 7071 response: {"port":7071,"open":false,"timeMs":2034.3999999910593}
+
+*/
+function checkPort() {
+    const portInput = document.getElementById('port-input');
+    if (!portInput) {
+        addLogLine('Port input not found.');
+        return;
+    }
+    const port = portInput.value.trim();
+    if (!port) {
+        addLogLine('Please enter a port number.');
+        return;
+    }
+    if (isNaN(port) || +port < 1 || +port > 65535) {
+        addLogLine('Invalid port number: ' + escapeHTML(port));
+        return;
+    }
+    if (typeof checkPortResponseTime !== 'function') {
+        addLogLine('checkPortResponseTime() is not defined.');
+        return;
+    }
+    checkPortResponseTime(+port)
+        .then(result => {
+            addLogLine('Port ' + port + ' response: ' + JSON.stringify(result));
+        })
+        .catch(err => {
+            addLogLine('Port ' + port + ' error: ' + (err && err.message ? err.message : err));
+        });
+
+    
 }
 
 document.addEventListener('DOMContentLoaded', eventListeners);
