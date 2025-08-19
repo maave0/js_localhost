@@ -6,6 +6,7 @@ function addLogLine(line) {
     div.className = 'log-line';
     div.textContent = line;
     logContainer.appendChild(div);
+    logContainer.scrollTop = logContainer.scrollHeight;
 }
 
 // Example log lines
@@ -16,4 +17,21 @@ const logs = [
     'Error: Invalid input',
     'User disconnected: 192.168.1.10'
 ];
-logs.forEach(addLogLine);
+
+function testAddingText() {
+    let runs = 10;
+    while (runs > 0) {
+        logs.forEach(addLogLine);
+        runs--;
+    }
+}
+
+// Add event listener for the button
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('add-logs-btn');
+    if (btn) {
+        btn.addEventListener('click', testAddingText);
+    }
+});
+
+
