@@ -198,6 +198,9 @@ function eventListeners() {
     if (noCORSBtn) {
         noCORSBtn.addEventListener('click', function() { getAPIUrl(false); });
     }
+
+    // log to user "console ready"
+    addLogLine('Console ready.');
 }
 
 

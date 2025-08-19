@@ -4,19 +4,55 @@ const portsAndServices = [
     port: 7071,
     protocol: 'http',
     service: 'Azure Function App (func start)',
-    notes: 'Local Azure Function app running in VSCode. Example: `func start`.'
+    notes: 'Local Azure Function app running in VSCode. Example: `func start`.',
+    timingSamples: [
+        {
+            serviceStatus: "on",
+            timeMs:"4.2000"
+         },
+        {
+            serviceStatus: "on",
+            timeMs:"3.3000"
+         },
+        {
+            serviceStatus: "on",
+            timeMs:"3.4000"
+         },
+        {
+            serviceStatus: "off",
+            timeMs:"2045.39999"
+         },
+        {
+            serviceStatus: "off",
+            timeMs:"2034.40000"
+         },
+    ]
   },
   {
     port: 8384,
     protocol: 'http',
     service: 'Syncthing GUI',
-    notes: 'No authentication, started by SyncTrayzor.'
+    notes: 'HTTP web GUI, no authentication, started by SyncTrayzor. Check syncthingController.js',
+    timingSamples: [
+        {
+            serviceStatus: "off",
+            timeMs:"2055"
+        },
+        {
+            serviceStatus: "on",
+            timeMs:"8"
+        },
+        {
+            serviceStatus: "on",
+            timeMs:"12"
+        }
+    ]
   },
   {
     port: 58846,
     protocol: 'rpc',
     service: 'Deluge Daemon',
-    notes: 'DelugeRPC, user localclient'
+    notes: 'DelugeRPC, user=localclient, random generated password. Also Deluge desktop application starts in "standalone" mode which doesnt use daemon',
   },
   {
     port: 8112,
@@ -33,16 +69,6 @@ const portsAndServices = [
 ];
 
 // Calls checkPortResponseTime with the port from input and logs the result
-
-/* with HTTP server running vs nothing running:
-
-Port 7071 response: {"port":7071,"open":false,"timeMs":4.200000002980232}
-Port 7071 response: {"port":7071,"open":false,"timeMs":3.2999999970197678}
-Port 7071 response: {"port":7071,"open":false,"timeMs":3.4000000059604645}
-Port 7071 response: {"port":7071,"open":false,"timeMs":2045.3999999910593}
-Port 7071 response: {"port":7071,"open":false,"timeMs":2034.3999999910593}
-
-*/
 function checkPort() {
     const portInput = document.getElementById('port-input');
     if (!portInput) {
@@ -90,19 +116,38 @@ async function checkPortResponseTime(portNum) {
 
     ws.onopen = () => {
       const elapsed = performance.now() - start;
+      roundedNum = roundDigits(elapsed);
       ws.close();
-      finish({ port: portNum, open: true, timeMs: elapsed });
+      finish({ port: portNum, open: true, timeMs: roundedNum });
     };
 
     ws.onerror = () => {
       const elapsed = performance.now() - start;
-      finish({ port: portNum, open: false, timeMs: elapsed });
+      roundedNum = roundDigits(elapsed);
+      finish({ port: portNum, open: false, timeMs: roundedNum });
     };
 
     // Fallback timeout if no response
     setTimeout(() => {
-      finish({ port: portNum, open: false, timeMs: performance.now() - start });
-      try { ws.close(); } catch (e) {}
+        const elapsed = performance.now() - start;
+        roundedNum = roundDigits(elapsed);
+        finish({ port: portNum, open: false, timeMs: roundedNum });
+        try { ws.close(); } catch (e) {}
     }, timeoutMs);
   });
+
+
+}
+
+/**
+ * Rounds a number to a specified number of digits
+ * because float precision can be a problem
+ * @param {float} num 
+ * @param {int} digits 
+ * @returns 
+ */
+function roundDigits(num, digits = 4) {
+    console.log('roundDigits', num, digits);
+    if (typeof num !== 'number') return num;
+    return parseFloat(num.toFixed(digits));
 }
