@@ -1,0 +1,25 @@
+body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+#log-container {
+    background: #222;
+    color: #eee;
+    padding: 20px;
+    margin: 40px auto;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 4px;
+    min-height: 300px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-size: 1.1em;
+    line-height: 1.5;
+    overflow-y: auto;
+}
+.log-line { margin-bottom: 6px; }
+
+.main-header {
+    text-align: center;
+    margin-top: 40px;
+    color: #333;
+    font-size: 2.2em;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
