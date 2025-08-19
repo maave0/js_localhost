@@ -1,3 +1,36 @@
+// Calls samples.js oligoXhrSample() and logs the result or error
+function getOligoXHR() {
+    if (typeof oligoXhrSample !== 'function') {
+        addLogLine('oligoXhrSample() is not defined.');
+        return;
+    }
+    oligoXhrSample()
+        .then(result => {
+            addLogLine('oligo XHR success: ' + getPreview(result));
+        })
+        .catch(err => {
+            addLogLine('oligo XHR error: ' + (err && err.message ? err.message : err));
+        });
+}
+// Calls samples.js xhrSample() and logs the result or error
+function getSampleAPI_XHR() {
+    console.log('Starting XHR Sample');
+    if (typeof xhrSample !== 'function') {
+        addLogLine('xhrSample() is not defined.');
+        return;
+    }
+    try {
+        xhrSample(function(err, result) {
+            if (err) {
+                addLogLine('XHR Sample error: ' + err);
+            } else {
+                addLogLine('XHR Sample success: ' + getPreview(result));
+            }
+        });
+    } catch (e) {
+        addLogLine('XHR Sample exception: ' + e.message);
+    }
+}
 
 function getAPIUrl(cors = true) {
     const input = document.getElementById('api-url-input');
@@ -37,11 +70,12 @@ function getPreview(str, maxLen = 100) {
 }
 
 // Azure Function App / dotnet running locally with `func start`
-// will be blocked in the browser by CORS:  net::ERR_FAILED 200 (OK)
+// the request will be blocked in the browser by CORS:  net::ERR_FAILED 200 (OK)
 // if CORS is allowed with `func host start --cors *` you get a 200 response and everything
-function getHeartbeat() {
+// if function is called with cors=false the request will continue regardless of CORS but you won't see the response (opaque)
+function getHeartbeat(cors = true) {
     let endpoint1 = 'http://localhost:7071/api/heartbeat';
-    callGetEndpoint(endpoint1)
+    callGetEndpoint(endpoint1, cors)
         .then(result => {
             addLogLine('GET ' + endpoint1 + ' success: ' + getPreview(result));
         })
@@ -50,7 +84,7 @@ function getHeartbeat() {
         });
 
     let endpoint2 = 'http://127.0.0.1:7071/api/heartbeat';
-    callGetEndpoint(endpoint2)
+    callGetEndpoint(endpoint2, cors)
         .then(result => {
             addLogLine('GET ' + endpoint2 + ' success: ' + getPreview(result));
         })
@@ -118,7 +152,6 @@ const logs = [
     'Error: Invalid input',
     'User disconnected: 192.168.1.10'
 ];
-
 function testAddingText() {
     let runs = 2;
     while (runs > 0) {
@@ -129,6 +162,16 @@ function testAddingText() {
 
 // Add event listener for the button
 function eventListeners() {
+
+    const oligoXHRBtn = document.getElementById('oligo-xhr-btn');
+    if (oligoXHRBtn) {
+        oligoXHRBtn.addEventListener('click', getOligoXHR);
+    }
+
+    const getGoogleXHRBtn = document.getElementById('get-google-xhr-btn');
+    if (getGoogleXHRBtn) {
+        getGoogleXHRBtn.addEventListener('click', getSampleAPI_XHR);
+    }
     const addLogsBtn = document.getElementById('add-logs-btn');
     if (addLogsBtn) {
         addLogsBtn.addEventListener('click', testAddingText);
