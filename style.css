@@ -31,7 +31,7 @@ body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 
     margin-top: 20px;
 }
 
-.add-logs-btn {
+.add-btn {
     padding: 10px 24px;
     font-size: 1em;
     border-radius: 4px;
@@ -41,6 +41,6 @@ body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 
     cursor: pointer;
     transition: background 0.2s;
 }
-.add-logs-btn:hover {
+.add-btn:hover {
     background: #444;
 }
