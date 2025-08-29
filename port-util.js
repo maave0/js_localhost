@@ -65,7 +65,35 @@ const portsAndServices = [
     protocol: 'http',
     service: 'Common HTTP',
     notes: ''
+  },
+  {
+    service: 'Docker',
+    protocol: 'tcp',
+    port: 2375,
+    notes:'must be specifically enabled',
+    notes2:'https://docs.docker.com/reference/cli/dockerd/'
+  },
+  {
+    service: 'Docker encrypted',
+    protocol: 'tcp',
+    port: 2376,
+    notes:''
+  },
+  {
+    service: 'Transmission',
+    protocol: 'http rpc',
+    port: 9091,
+    notes:'HTTP RPC API'
+  },
+  {
+    service: 'mcp-proxy',
+    port: 8080,
+    ports: [8080,6277],
+    protocol: 'http',
+    notes:'LLM MCP server proxt. The NodeJS default server listens on port 8080 and /mcp (streamable HTTP) and /sse (SSE) endpoints. Some guides use port 6277. mcp-proxy may be run by MCP Inspector',
+    notes2:'https://www.oligo.security/blog/critical-rce-vulnerability-in-anthropic-mcp-inspector-cve-2025-49596'
   }
+  
 ];
 
 // Calls checkPortResponseTime with the port from input and logs the result
@@ -88,6 +116,7 @@ function checkPort() {
         addLogLine('checkPortResponseTime() is not defined.');
         return;
     }
+    addLogLine('Checking port: ' + escapeHTML(port));
     checkPortResponseTime(+port)
         .then(result => {
             addLogLine('Port ' + port + ' response: ' + JSON.stringify(result));
