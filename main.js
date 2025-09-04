@@ -104,10 +104,17 @@ function getSampleAPI() {
 }
 
 // Function to call a GET endpoint with a given URL
+// subject to cors, responds in about 2000 ms
 async function callGetEndpoint(url, cors = true) {
+    
+    const start = performance.now();
     try {
         const fetchOptions = cors ? {} : { mode: 'no-cors' };
         const response = await fetch(url, fetchOptions);
+        // response time
+        const elapsed = performance.now() - start;
+        const roundedResponseTime = roundDigits(elapsed); //response time
+        //const responsebody = { port: portNum, status: response, timeMs: roundedResponseTime, result: result };
         if (!response.ok && cors) {
             throw new Error('Network response was not ok: ' + response.status);
         }
@@ -115,9 +122,12 @@ async function callGetEndpoint(url, cors = true) {
         if (!cors && response.type === 'opaque') {
             return '[no-cors request sent, response is opaque]';
         }
-        return await response.text();
+        return response;
     } catch (error) {
+        const elapsed = performance.now() - start;
+        const roundedResponseTime = roundDigits(elapsed);
         addLogLine('Request to ' + url + ' failed: ' + error.message);
+        addLogLine('Response time (ms): ' + roundedResponseTime);
         throw error;
     }
 }
@@ -167,6 +177,11 @@ function eventListeners() {
     const checkPortBtn = document.getElementById('check-port-btn');
     if (checkPortBtn) {
         checkPortBtn.addEventListener('click', checkPort);
+    }
+
+    const scanPortsBtn = document.getElementById('scan-ports-btn');
+    if (scanPortsBtn) {
+        scanPortsBtn.addEventListener('click', scanPorts);
     }
 
     const checkHttpBtn = document.getElementById('check-http-btn');

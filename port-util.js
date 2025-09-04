@@ -49,29 +49,62 @@ async function checkPortResponseTime(portNum) {
 
     ws.onopen = () => {
       const elapsed = performance.now() - start;
-      roundedNum = roundDigits(elapsed);
+      roundedResponseTime = roundDigits(elapsed);
       ws.close();
-      finish({ port: portNum, webSocketOpen: true, timeMs: roundedNum });
+      finish({ port: portNum, webSocketOpen: true, timeMs: roundedResponseTime });
     };
 
     ws.onerror = (event) => {
       const elapsed = performance.now() - start;
-      roundedNum = roundDigits(elapsed);
-      finish({ port: portNum, webSocketOpen: false, timeMs: roundedNum, errorMsg: JSON.stringify(event) });
+      roundedResponseTime = roundDigits(elapsed);
+      finish({ port: portNum, webSocketOpen: false, timeMs: roundedResponseTime, errorMsg: JSON.stringify(event) });
     };
 
     // Fallback timeout if no response
     setTimeout(() => {
         const elapsed = performance.now() - start;
-        roundedNum = roundDigits(elapsed);
-        finish({ port: portNum, webSocketOpen: false, status:"timeout", timeMs: roundedNum });
+        roundedResponseTime = roundDigits(elapsed);
+        finish({ port: portNum, webSocketOpen: false, status:"timeout", timeMs: roundedResponseTime });
         try { ws.close(); } catch (e) {}
     }, timeoutMs);
   });
 }
 
 
+async function scanPorts() {
+  // if the port replies faster than this, it's probably open
+  const fastResponseMs = 200;
+  const slowResponseMs = 2000;
+  const likelyOpenPorts = [];
 
+  if (typeof portsAndServices === 'undefined') {
+    addLogLine('portsAndServices is not defined.');
+    return;
+  }
+  // Get unique port numbers
+  const uniquePorts = Array.from(new Set(
+    portsAndServices
+      .map(svc => Array.isArray(svc.ports) ? svc.ports : [svc.port])
+      .flat()
+      .filter(port => typeof port === 'number' && !isNaN(port))
+  ));
+
+  addLogLine('Scanning ports: ' + uniquePorts.join(', '));
+
+  for (const portNum of uniquePorts) {
+    try {
+      const result = await checkPortResponseTime(portNum);
+      addLogLine(`Port ${portNum} timeMs: ${result.timeMs}`);
+      if (result.timeMs < fastResponseMs) {
+        likelyOpenPorts.push(portNum);
+      }
+    } catch (err) {
+      addLogLine(`Port ${portNum} error: ${err && err.message ? err.message : err}`);
+    }
+  }
+  addLogLine('Likely open ports: ' + (likelyOpenPorts.length ? likelyOpenPorts.join(', ') : 'None detected below threshold'));
+  return likelyOpenPorts;
+}
 
 function checkHttpPort() {
     const portInput = document.getElementById('port-input');
@@ -93,7 +126,7 @@ function checkHttpPort() {
         return;
     }
     addLogLine('Checking port: ' + escapeHTML(port));
-    checkHttpResponse(+port)
+    checkHttpResponse(port)
         .then(result => {
             addLogLine('Port ' + port + ' response: ' + JSON.stringify(result));
         })
@@ -124,13 +157,13 @@ async function checkHttpResponse(portNum) {
     const result = await response.json();
     console.log(result);
     const elapsed = performance.now() - start;
-    const roundedNum = roundDigits(elapsed);
-    return Promise.resolve({ port: portNum, httpOpen: true, status: response.status, timeMs: roundedNum, result: result });
+    const roundedResponseTime = roundDigits(elapsed);
+    return Promise.resolve({ port: portNum, httpOpen: true, status: response.status, timeMs: roundedResponseTime, result: result });
   } catch (error) {
     console.error("error\n"+error.message);
     const elapsed = performance.now() - start;
-    const roundedNum = roundDigits(elapsed);
-    return Promise.resolve({ port: portNum, httpOpen: false, status: "error", timeMs: roundedNum, errorMsg: error });
+    const roundedResponseTime = roundDigits(elapsed);
+    return Promise.resolve({ port: portNum, httpOpen: false, status: "error", timeMs: roundedResponseTime, errorMsg: error });
   }
 
 }
