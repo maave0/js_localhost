@@ -102,8 +102,44 @@ async function scanPorts() {
       addLogLine(`Port ${portNum} error: ${err && err.message ? err.message : err}`);
     }
   }
-  addLogLine('Likely open ports: ' + (likelyOpenPorts.length ? likelyOpenPorts.join(', ') : 'None detected below threshold'));
-  return likelyOpenPorts;
+  // Map likely open ports to possible service names using portToServiceNames
+  let openPortServices = [];
+  for (const portNum of likelyOpenPorts) {
+    const serviceNames = portToServiceNames(portNum);
+    openPortServices.push({
+      port: portNum,
+      services: serviceNames.length ? serviceNames : ['Unknown']
+    });
+  }
+
+  if (openPortServices.length) {
+    addLogLine('Likely open ports and possible services:');
+    openPortServices.forEach(entry => {
+      addLogLine(`Port ${entry.port}: ${entry.services.join('; ')}`);
+    });
+  } else {
+    addLogLine('None detected below threshold');
+  }
+
+  return openPortServices;
+
+}
+
+/**
+ * Returns an array of possible service names for a given port number
+ * @param {number} portNum
+ * @returns {string[]}
+ */
+function portToServiceNames(portNum) {
+  if (typeof portsAndServices === 'undefined') return [];
+  const matches = portsAndServices.filter(svc => {
+    if (Array.isArray(svc.ports)) {
+      return svc.ports.includes(portNum);
+    } else {
+      return svc.port === portNum;
+    }
+  });
+  return matches.map(m => m.service);
 }
 
 function checkHttpPort() {
