@@ -1,104 +1,9 @@
-
-const portsAndServices = [
-  {
-    port: 7071,
-    protocol: 'http',
-    service: 'Azure Function App (func start)',
-    notes: 'Local Azure Function app running in VSCode. Example: `func start`.',
-    timingSamples: [
-        {
-            serviceStatus: "on",
-            timeMs:"4.2000"
-         },
-        {
-            serviceStatus: "on",
-            timeMs:"3.3000"
-         },
-        {
-            serviceStatus: "on",
-            timeMs:"3.4000"
-         },
-        {
-            serviceStatus: "off",
-            timeMs:"2045.39999"
-         },
-        {
-            serviceStatus: "off",
-            timeMs:"2034.40000"
-         },
-    ]
-  },
-  {
-    port: 8384,
-    protocol: 'http',
-    service: 'Syncthing GUI',
-    notes: 'HTTP web GUI, no authentication, started by SyncTrayzor. Check syncthingController.js',
-    timingSamples: [
-        {
-            serviceStatus: "off",
-            timeMs:"2055"
-        },
-        {
-            serviceStatus: "on",
-            timeMs:"8"
-        },
-        {
-            serviceStatus: "on",
-            timeMs:"12"
-        }
-    ]
-  },
-  {
-    port: 58846,
-    protocol: 'rpc',
-    service: 'Deluge Daemon',
-    notes: 'DelugeRPC, user=localclient, random generated password. Also Deluge desktop application starts in "standalone" mode which doesnt use daemon',
-  },
-  {
-    port: 8112,
-    protocol: 'http',
-    service: 'Deluge Web',
-    notes: 'Deluge web interface, includes JSON-RPC API.'
-  },
-  {
-    port: 8080,
-    protocol: 'http',
-    service: 'Common HTTP',
-    notes: ''
-  },
-  {
-    service: 'Docker',
-    protocol: 'tcp',
-    port: 2375,
-    notes:'must be specifically enabled',
-    notes2:'https://docs.docker.com/reference/cli/dockerd/'
-  },
-  {
-    service: 'Docker encrypted',
-    protocol: 'tcp',
-    port: 2376,
-    notes:''
-  },
-  {
-    service: 'Transmission',
-    protocol: 'http rpc',
-    port: 9091,
-    notes:'HTTP RPC API'
-  },
-  {
-    service: 'mcp-proxy',
-    port: 8080,
-    ports: [8080,6277],
-    protocol: 'http',
-    notes:'LLM MCP server proxt. The NodeJS default server listens on port 8080 and /mcp (streamable HTTP) and /sse (SSE) endpoints. Some guides use port 6277. mcp-proxy may be run by MCP Inspector',
-    notes2:'https://www.oligo.security/blog/critical-rce-vulnerability-in-anthropic-mcp-inspector-cve-2025-49596'
-  }
-  
-];
+var localAddress = "127.0.0.1";
 
 // Calls checkPortResponseTime with the port from input and logs the result
 function checkPort() {
     const portInput = document.getElementById('port-input');
+    // validation
     if (!portInput) {
         addLogLine('Port input not found.');
         return;
@@ -124,14 +29,13 @@ function checkPort() {
         .catch(err => {
             addLogLine('Port ' + port + ' error: ' + (err && err.message ? err.message : err));
         });
-
-    
 }
 
 async function checkPortResponseTime(portNum) {
+  console.log("checking websocket");
   return new Promise((resolve) => {
     const start = performance.now();
-    const ws = new WebSocket(`ws://127.0.0.1:${portNum}`);
+  const ws = new WebSocket(`ws://${localAddress}:${portNum}`);
     const timeoutMs = 10 * 1000;
 
     let finished = false;
@@ -147,26 +51,90 @@ async function checkPortResponseTime(portNum) {
       const elapsed = performance.now() - start;
       roundedNum = roundDigits(elapsed);
       ws.close();
-      finish({ port: portNum, open: true, timeMs: roundedNum });
+      finish({ port: portNum, webSocketOpen: true, timeMs: roundedNum });
     };
 
-    ws.onerror = () => {
+    ws.onerror = (event) => {
       const elapsed = performance.now() - start;
       roundedNum = roundDigits(elapsed);
-      finish({ port: portNum, open: false, timeMs: roundedNum });
+      finish({ port: portNum, webSocketOpen: false, timeMs: roundedNum, errorMsg: JSON.stringify(event) });
     };
 
     // Fallback timeout if no response
     setTimeout(() => {
         const elapsed = performance.now() - start;
         roundedNum = roundDigits(elapsed);
-        finish({ port: portNum, open: false, timeMs: roundedNum });
+        finish({ port: portNum, webSocketOpen: false, status:"timeout", timeMs: roundedNum });
         try { ws.close(); } catch (e) {}
     }, timeoutMs);
   });
+}
 
+
+
+
+function checkHttpPort() {
+    const portInput = document.getElementById('port-input');
+    if (!portInput) {
+        addLogLine('Port input not found.');
+        return;
+    }
+    const port = portInput.value.trim();
+    if (!port) {
+        addLogLine('Please enter a port number.');
+        return;
+    }
+    if (isNaN(port) || +port < 1 || +port > 65535) {
+        addLogLine('Invalid port number: ' + escapeHTML(port));
+        return;
+    }
+    if (typeof checkHttpResponse !== 'function') {
+        addLogLine('checkHttpResponse() is not defined.');
+        return;
+    }
+    addLogLine('Checking port: ' + escapeHTML(port));
+    checkHttpResponse(+port)
+        .then(result => {
+            addLogLine('Port ' + port + ' response: ' + JSON.stringify(result));
+        })
+        .catch(err => {
+            addLogLine('Port ' + port + ' error: ' + (err && err.message ? err.message : err));
+        });
+}
+/**
+ * attempt connection using HTTP fetch
+ * subject to CORS
+ * @param {int} portNum 
+ * @returns Promise
+ */
+async function checkHttpResponse(portNum) {
+  console.log("checking http");
+  var url = `http://${localAddress}:${portNum}/`;
+  
+  const start = performance.now();
+  const timeoutMs = 10 * 1000;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      mode: "no-cors"
+    });
+    if (!response.ok) {
+      throw new Error(`Response status: ${JSON.stringify(response)}`);
+    }
+    const result = await response.json();
+    console.log(result);
+    const elapsed = performance.now() - start;
+    const roundedNum = roundDigits(elapsed);
+    return Promise.resolve({ port: portNum, httpOpen: true, status: response.status, timeMs: roundedNum, result: result });
+  } catch (error) {
+    console.error("error\n"+error.message);
+    const elapsed = performance.now() - start;
+    const roundedNum = roundDigits(elapsed);
+    return Promise.resolve({ port: portNum, httpOpen: false, status: "error", timeMs: roundedNum, errorMsg: error });
+  }
 
 }
+
 
 /**
  * Rounds a number to a specified number of digits

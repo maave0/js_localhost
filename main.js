@@ -162,10 +162,16 @@ function testAddingText() {
 
 // Add event listener for the button
 function eventListeners() {
+    console.log("adding event listeners");
 
     const checkPortBtn = document.getElementById('check-port-btn');
     if (checkPortBtn) {
         checkPortBtn.addEventListener('click', checkPort);
+    }
+
+    const checkHttpBtn = document.getElementById('check-http-btn');
+    if (checkPortBtn) {
+        checkHttpBtn.addEventListener('click', checkHttpPort);
     }
 
     const oligoXHRBtn = document.getElementById('oligo-xhr-btn');
