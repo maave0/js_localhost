@@ -146,11 +146,40 @@ function escapeHTML(str) {
     });
 }
 
-function addLogLine(line) {
+function toggleLogLine(){
+    const contentSpan = this.nextSibling;
+    if (contentSpan.style.display === 'none') {
+        contentSpan.style.display = 'inline';
+        this.textContent = '▼ ';
+    } else {
+        contentSpan.style.display = 'none';
+        this.textContent = '▶ ' + contentSpan.textContent.substring(0, 20) + '...';
+    }
+}
+
+function addLogLine(line, collapsed = false) {
     const div = document.createElement('div');
     div.className = 'log-line';
-    div.innerHTML = escapeHTML(line);
+
+    if (collapsed) {
+        console.log("adding collapsed log line");
+        const revealArrow = document.createElement('span');
+        revealArrow.textContent = '▶ ' + line.substring(0, 20) + '...';
+        revealArrow.style.cursor = 'pointer';
+        revealArrow.style.userSelect = 'none';
+        div.appendChild(revealArrow);
+        const contentSpan = document.createElement('span');
+        contentSpan.style.display = 'none';
+        contentSpan.innerHTML = escapeHTML(line);
+        div.appendChild(contentSpan);
+        // js onclick to toggle
+        revealArrow.onclick = toggleLogLine;
+    }
+    else {    
+        div.innerHTML = escapeHTML(line);
+    }
     logContainer.appendChild(div);
+
     logContainer.scrollTop = logContainer.scrollHeight;
 }
 
@@ -224,6 +253,56 @@ function eventListeners() {
     addLogLine('Console ready.');
 }
 
+function fingerprint() {
 
+    // user agent
+    console.log("checking user agent");
+    const parser = new UAParser();
+    const result = parser.getResult();
+    console.log(""+JSON.stringify(result));
+
+    addLogLine("Browser: "+ result.browser.name + " " + result.browser.version);
+    addLogLine("OS: "+ result.os.name);
+    
+
+    // navigator
+    console.log(navigator);
+    // copy object that can't be JSON strigified
+    var _navigator = {};
+    for (var i in navigator) _navigator[i] = navigator[i];
+    // remove deprecated
+    delete _navigator.plugins;
+    delete _navigator.mimeTypes;
+    // remove null and empty {}
+    for (var key in _navigator) {
+        if (_navigator[key] === null) {
+            delete _navigator[key];
+        } else if (typeof _navigator[key] === 'object' && Object.keys(_navigator[key]).length === 0) {
+            delete _navigator[key];
+        }
+    }
+    addLogLine("nav: "+ JSON.stringify(_navigator), collapsed=true);
+
+
+    // webgl
+    console.log("checking webgl");
+    const canvas = document.getElementById("webgl-canvas");
+    const gl = canvas.getContext("webgl");
+    gl.getParameter(gl.VERSION);
+    gl.getParameter(gl.VENDOR);
+    gl.getParameter(gl.RENDERER);
+    gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
+    var webglInfo = {
+        version: gl.getParameter(gl.VERSION),
+        vendor: gl.getParameter(gl.VENDOR),
+        renderer: gl.getParameter(gl.RENDERER),
+        shadingLanguageVersion: gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
+    };
+    addLogLine("webgl: "+ JSON.stringify(webglInfo), collapsed=true);
+    //console.log("checked webgl");
+    
+
+}
 
 document.addEventListener('DOMContentLoaded', eventListeners);
+document.addEventListener('DOMContentLoaded', fingerprint);

@@ -144,7 +144,7 @@ const portsAndServices = [
     port: 9000,
     protocol: "fastcgi",
     service: "php-fpm",
-    notes: "php-fpm listens on 9000 for FastCGI, not HTTP. Some custom HTTP servers may also use 9000."
+    notes: "php-fpm listens on 9000 for FastCGI. Some custom HTTP servers may also use 9000."
   },
   
   {
@@ -219,7 +219,13 @@ const portsAndServices = [
     port: 1883,
     protocol: "tcp",
     service: "Mosquitto MQTT",
-    notes: "Default port for MQTT broker (unencrypted). TLS variant uses 8883."
+    notes: "Default port for MQTT broker (unencrypted)"
+  },
+  {
+    port: 8883,
+    protocol: "tcp",
+    service: "Mosquitto MQTT",
+    notes: "MQTT broker, TLS"
   },
 
 

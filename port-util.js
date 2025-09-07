@@ -170,6 +170,7 @@ function checkHttpPort() {
             addLogLine('Port ' + port + ' error: ' + (err && err.message ? err.message : err));
         });
 }
+
 /**
  * attempt connection using HTTP fetch
  * subject to CORS
