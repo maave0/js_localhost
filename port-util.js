@@ -73,9 +73,13 @@ async function checkPortResponseTime(portNum) {
 
 async function scanPorts() {
   // if the port replies faster than this, it's probably open
+  const instantResponseMs = 30;
   const fastResponseMs = 200;
-  const slowResponseMs = 2000;
+  const slowResponseMs = 900;
   const likelyOpenPorts = [];
+
+  let responseTimes = {};
+  let avgResponseTime = 0;
 
   if (typeof portsAndServices === 'undefined') {
     addLogLine('portsAndServices is not defined.');
@@ -93,15 +97,33 @@ async function scanPorts() {
 
   for (const portNum of uniquePorts) {
     try {
+      // check and log response time
       const result = await checkPortResponseTime(portNum);
       addLogLine(`Port ${portNum} timeMs: ${result.timeMs}`);
-      if (result.timeMs < fastResponseMs) {
-        likelyOpenPorts.push(portNum);
-      }
+      responseTimes[portNum] = result.timeMs;
     } catch (err) {
       addLogLine(`Port ${portNum} error: ${err && err.message ? err.message : err}`);
     }
   }
+
+  // avg response time
+  const totalResponseTime = Object.values(responseTimes).reduce( (sum, time) => sum+time, 0 );
+  avgResponseTime = totalResponseTime / Object.values(responseTimes).length;
+  addLogLine(`Average response time: ${avgResponseTime.toFixed(1)} ms`);
+
+  // sanity check. If all null responses are fast, profiling won't work
+  if (Object.values(responseTimes).every(t => t <= instantResponseMs)) {
+    addLogLine('All response times below ' + instantResponseMs + ' ms, cannot determine open ports reliably.');
+    return [];
+  }
+  
+  for (const [portNum, timeMs] of Object.entries(responseTimes)) {
+    if (timeMs <= fastResponseMs) {
+      likelyOpenPorts.push(Number(portNum));
+    }
+  }
+
+  // output
   // Map likely open ports to possible service names using portToServiceNames
   let openPortServices = [];
   for (const portNum of likelyOpenPorts) {
@@ -204,7 +226,6 @@ async function checkHttpResponse(portNum) {
   }
 
 }
-
 
 /**
  * Rounds a number to a specified number of digits

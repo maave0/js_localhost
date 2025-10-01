@@ -300,7 +300,6 @@ function fingerprint() {
     };
     addLogLine("webgl: "+ JSON.stringify(webglInfo), collapsed=true);
     //console.log("checked webgl");
-    
 
 }
 

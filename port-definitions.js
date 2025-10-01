@@ -227,6 +227,18 @@ const portsAndServices = [
     service: "Mosquitto MQTT",
     notes: "MQTT broker, TLS"
   },
+  {
+    port: 8089,
+    protocol: "http",
+    service: "Podman System Service",
+    notes: "Podman REST API service. Must be specifically enabled.",
+  },
+  {
+    port: 9090,
+    protocol: "http",
+    service: "Podman API Service",
+    notes: "Podman API, typically used locally by Podman Desktop",
+  },
 
 
 ];
