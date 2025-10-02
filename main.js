@@ -288,10 +288,6 @@ function fingerprint() {
     console.log("checking webgl");
     const canvas = document.getElementById("webgl-canvas");
     const gl = canvas.getContext("webgl");
-    gl.getParameter(gl.VERSION);
-    gl.getParameter(gl.VENDOR);
-    gl.getParameter(gl.RENDERER);
-    gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
     var webglInfo = {
         version: gl.getParameter(gl.VERSION),
         vendor: gl.getParameter(gl.VENDOR),

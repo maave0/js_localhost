@@ -70,8 +70,12 @@ async function checkPortResponseTime(portNum) {
   });
 }
 
-
-async function scanPorts() {
+/**
+ * 
+ * @param {boolean} dryRun - uses fixed values for ports/responseTimes
+ * @returns ports of interest
+ */
+async function scanPorts(dryRun=false) {
   // if the port replies faster than this, it's probably open
   const instantResponseMs = 30;
   const fastResponseMs = 200;
@@ -95,14 +99,42 @@ async function scanPorts() {
 
   addLogLine('Scanning ports: ' + uniquePorts.join(', '));
 
-  for (const portNum of uniquePorts) {
-    try {
-      // check and log response time
-      const result = await checkPortResponseTime(portNum);
-      addLogLine(`Port ${portNum} timeMs: ${result.timeMs}`);
-      responseTimes[portNum] = result.timeMs;
-    } catch (err) {
-      addLogLine(`Port ${portNum} error: ${err && err.message ? err.message : err}`);
+  // TODO: split function into "scan ports" and "analyze results" for ease of testing
+  if(dryRun) {
+    addLogLine('Testing');
+    // hard-code response times so we can test analysis functions
+    responseTimes = {
+      1: 2000,
+      2: 2036,
+      3: 2050.2,
+      4: 2064.3,
+      5: 2068.4,
+      6: 2063.4,
+      7: 2083.8,
+      8: 2077.3,
+      9: 2116.8,
+      10: 2097.7,
+      11: 2252.9,
+      12: 2672.9,
+      13: 2810.2,
+      14: 4322.6,
+      15: 4654.5,
+      16: 5557.9,
+      17: 3058.3,
+      18: 4951.9,
+      19: 1,
+    }
+  } else {
+    addLogLine('Scanning ports: ' + uniquePorts.join(', '));
+    for (const portNum of uniquePorts) {
+      try {
+        // check and log response time
+        const result = await checkPortResponseTime(portNum);
+        addLogLine(`Port ${portNum} timeMs: ${result.timeMs}`);
+        responseTimes[portNum] = result.timeMs;
+      } catch (err) {
+        addLogLine(`Port ${portNum} error: ${err && err.message ? err.message : err}`);
+      }
     }
   }
 
@@ -110,6 +142,20 @@ async function scanPorts() {
   const totalResponseTime = Object.values(responseTimes).reduce( (sum, time) => sum+time, 0 );
   avgResponseTime = totalResponseTime / Object.values(responseTimes).length;
   addLogLine(`Average response time: ${avgResponseTime.toFixed(1)} ms`);
+  addLogLine(`Filtering outliers ...`);
+
+  // filter outliers
+  filteredResponseTimes = filterOutliers( Object.values(responseTimes) );
+  let difference = Object.values(responseTimes).filter(x => !filteredResponseTimes.includes(x));
+  addLogLine(`Removed ${difference.length} outlier${difference.length==1?'':'s'}`);
+  if(difference.length) {
+    addLogLine(`Removed ${difference.join(", ")}`)
+  }
+  
+  // display avg sans outliers
+  filtTotalRespTime = filteredResponseTimes.reduce( (sum, time) => sum+time, 0 );
+  filtAvgRespTime = filtTotalRespTime / filteredResponseTimes.length;
+  addLogLine(`After filtering outliers, avg response time: ${filtAvgRespTime.toFixed(1)} ms`);
 
   // sanity check. If all null responses are fast, profiling won't work
   if (Object.values(responseTimes).every(t => t <= instantResponseMs)) {
@@ -238,4 +284,40 @@ function roundDigits(num, digits = 4) {
     console.log('roundDigits', num, digits);
     if (typeof num !== 'number') return num;
     return parseFloat(num.toFixed(digits));
+}
+
+/**
+ * remove statistical outliers from int array
+ * @param {array} someArray 
+ * @returns modified array
+ */
+function filterOutliers(collection) {
+    const size = collection.length;
+    let q1, q3;
+
+    // min size for math to work
+    if (size < 2) {
+        return collection;
+    }
+
+    // slice() to copy array, then sort
+    const sortedCollection = collection.slice().sort((a, b) => a - b);
+
+    // find q1 and q3
+    if ((size - 1) / 4 % 1 === 0 || size / 4 % 1 === 0) {
+      q1 = 1 / 2 * (sortedCollection[Math.floor(size / 4) - 1] + sortedCollection[Math.floor(size / 4)]);
+      q3 = 1 / 2 * (sortedCollection[Math.ceil(size * 3 / 4) - 1] + sortedCollection[Math.ceil(size * 3 / 4)]);
+    } else {
+      // if our set size is cleanly divisible by 4, then average the two elements on either side to find q1
+      q1 = sortedCollection[Math.floor(size / 4)];
+      q3 = sortedCollection[Math.floor(size * 3 / 4)];
+    }
+
+    // inter-quartile range
+    const iqr = q3 - q1;
+    // what counts as an outlier
+    const maxValue = q3 + iqr * 1.5;
+    const minValue = q1 - iqr * 1.5;
+
+    return sortedCollection.filter(x => (x >= minValue) && (x <= maxValue));
 }
