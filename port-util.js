@@ -210,6 +210,79 @@ function portToServiceNames(portNum) {
   return matches.map(m => m.service);
 }
 
+/**
+ * check default HTTP endpoints for React Native CLI server Metro 
+ */
+function checkMetro() {
+    const endpoints = [
+        { path: '/', method: 'GET' },
+        { path: '/open-stack-frame', method: 'POST', body: {} },
+        { path: '/open-url', method: 'POST', body: { url: 'https://google.com' } },
+        { path: '/status', method: 'GET' },
+        { path: '/systrace', method: 'POST', body: { rawBody: 'test string' } },
+        { path: '/reload', method: 'GET' }
+    ];
+
+    endpoints.forEach(async (endpoint) => {
+        const url = `http://${localAddress}:8081${endpoint.path}`;
+        const options = {
+            method: endpoint.method,
+            mode: 'no-cors',
+        };
+
+        if (endpoint.method === 'POST' && endpoint.body) {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = JSON.stringify(endpoint.body);
+        }
+
+        try {
+            const response = await fetch(url, options);
+
+            if (response.ok) {
+                addLogLine(`Endpoint ${endpoint.path} is reachable. Status: ${response.status}`);
+            } else {
+                addLogLine(`Endpoint ${endpoint.path} returned status: ${response.status}`);
+            }
+        } catch (error) {
+            addLogLine(`Error reaching endpoint ${endpoint.path}: ${error.message}`);
+        }
+    });
+}
+
+function checkMetroOpenUrl() {
+    const urlInput = document.getElementById('metro-url-input');
+    if (!urlInput) {
+        addLogLine('Metro URL input not found.');
+        return;
+    }
+
+    const url = urlInput.value.trim();
+    if (!url) {
+        addLogLine('Please enter a URL.');
+        return;
+    }
+
+    const endpoint = '/open-url';
+    const fullUrl = `http://${localAddress}:8081${endpoint}`;
+    const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+    };
+
+    fetch(fullUrl, options)
+        .then(response => {
+            if (response.ok) {
+                addLogLine(`Successfully called ${endpoint} with URL: ${url}`);
+            } else {
+                addLogLine(`Failed to call ${endpoint}. Status: ${response.status}`);
+            }
+        })
+        .catch(error => {
+            addLogLine(`Error calling ${endpoint}: ${error.message}`);
+        });
+}
+
 function checkHttpPort() {
     const portInput = document.getElementById('port-input');
     if (!portInput) {
@@ -292,6 +365,7 @@ function roundDigits(num, digits = 4) {
  * @returns modified array
  */
 function filterOutliers(collection) {
+    //https://stackoverflow.com/a/64772130/4263277
     const size = collection.length;
     let q1, q3;
 

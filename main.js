@@ -204,29 +204,25 @@ function eventListeners() {
     console.log("adding event listeners");
 
     const checkPortBtn = document.getElementById('check-port-btn');
-    if (checkPortBtn) {
-        checkPortBtn.addEventListener('click', checkPort);
-    }
+    if (checkPortBtn) { checkPortBtn.addEventListener('click', checkPort); }
 
     const scanPortsBtn = document.getElementById('scan-ports-btn');
-    if (scanPortsBtn) {
-        scanPortsBtn.addEventListener('click', scanPorts);
-    }
+    if (scanPortsBtn) { scanPortsBtn.addEventListener('click', scanPorts); }
 
     const checkHttpBtn = document.getElementById('check-http-btn');
-    if (checkPortBtn) {
-        checkHttpBtn.addEventListener('click', checkHttpPort);
-    }
+    if (checkHttpBtn) { checkHttpBtn.addEventListener('click', checkHttpPort); }
+
+    const checkMetroBtn = document.getElementById('check-metro-btn');
+    if (checkMetroBtn) { checkMetroBtn.addEventListener('click', checkMetro); }
+
+    const checkMetroOpenUrlBtn = document.getElementById('check-open-url-btn');
+    if (checkMetroOpenUrlBtn) { checkMetroOpenUrlBtn.addEventListener('click', checkMetroOpenUrl); }
 
     const oligoXHRBtn = document.getElementById('oligo-xhr-btn');
-    if (oligoXHRBtn) {
-        oligoXHRBtn.addEventListener('click', getOligoXHR);
-    }
+    if (oligoXHRBtn) { oligoXHRBtn.addEventListener('click', getOligoXHR); }
 
     const getGoogleXHRBtn = document.getElementById('get-google-xhr-btn');
-    if (getGoogleXHRBtn) {
-        getGoogleXHRBtn.addEventListener('click', getSampleAPI_XHR);
-    }
+    if (getGoogleXHRBtn) { getGoogleXHRBtn.addEventListener('click', getSampleAPI_XHR); }
     const addLogsBtn = document.getElementById('add-logs-btn');
     if (addLogsBtn) {
         addLogsBtn.addEventListener('click', testAddingText);
