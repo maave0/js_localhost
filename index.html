@@ -11,29 +11,21 @@
 	
 	<div id="log-container"></div>
 
-	<div class="button-container">
-		<h2>Select Host:</h2>
-		<div class="form-check">
-			<label class="form-check-label">
-				<input class="form-check-input" type="radio" name="host" value="localhost" checked> localhost
-			</label>
-		</div>
-		<div class="form-check">
-			<label class="form-check-label">
-				<input class="form-check-input" type="radio" name="host" value="127.0.0.1"> 127.0.0.1
-			</label>
-		</div>
+	<!-- Add tabs for grouping buttons -->
+	<div class="tabs">
+		<button class="tab-btn" data-tab="scan">Scan</button>
+		<button class="tab-btn" data-tab="testing">Testing Functions</button>
+		<button class="tab-btn" data-tab="metro">Metro Server API</button>
 	</div>
 
-	<div class="button-container">
+	<!-- Wrap existing button groups in tab-content divs -->
+	<div class="tab-content button-container" id="scan">
+		<h2>scan:</h2>
 		<button id="scan-ports-btn" class="add-btn get-url-btn">scan ports</button>
-		<br>
-		<br>
-		<br>
-		<br>
+	</div>
 
+	<div class="tab-content hidden button-container" id="testing">
 		<h2>testing functions:</h2>
-		<button id="add-logs-btn" class="add-btn hidden">Sample Logs</button>
 		<button id="get-google-btn" class="add-btn">Get IP</button>
 		<button id="get-google-xhr-btn" class="add-btn">Get IP (XHR)</button>
 		<button id="get-heartbeat-btn" class="add-btn hidden">Call Heartbeat</button>
@@ -44,19 +36,41 @@
 		<input id="port-input" class="api-url-input" type="text" placeholder="Enter Port Number...">
 		<button id="check-port-btn" class="add-btn get-url-btn">check port</button>
 		<button id="check-http-btn" class="add-btn get-url-btn">check http</button>
+	</div>
 
-		<br>
-		<br>
-		<h2>React-Native Metro server:</h2>
+	<div class="tab-content hidden button-container" id="metro">
+		<h2>Metro server API:</h2>
+		<div class="button-container">
+			<h2>Select Host:</h2>
+			<div class="form-check">
+				<label class="form-check-label">
+					<input class="form-check-input" type="radio" name="host" value="localhost" checked> localhost
+				</label>
+			</div>
+			<div class="form-check">
+				<label class="form-check-label">
+					<input class="form-check-input" type="radio" name="host" value="127.0.0.1"> 127.0.0.1
+				</label>
+			</div>
+		</div>
+
+		<div class="button-container">
+			<h2>Enable CORS:</h2>
+			<div class="form-check">
+				<label class="form-check-label">
+					<input class="form-check-input" type="radio" name="cors" value="true" checked> True
+				</label>
+			</div>
+			<div class="form-check">
+				<label class="form-check-label">
+					<input class="form-check-input" type="radio" name="cors" value="false"> False
+				</label>
+			</div>
+		</div>
+
 		<input id="metro-url-input" class="api-url-input" type="text" placeholder="URL" value="https://google.com">
 		<button id="check-open-url-btn" class="add-btn get-url-btn">Open URL</button>
 		<button id="check-metro-btn" class="add-btn get-url-btn">Metro suite</button>
-
-		
-
-		<br>
-		<br>
-		<br>
 	</div>
 
 	<div id="webgl-container" class="hidden">
@@ -65,7 +79,6 @@
 		<canvas id="webgl-canvas" width="300" height="150"></canvas>
 	</div>
 
-	
 	<script src="https://cdn.jsdelivr.net/npm/ua-parser-js@2/dist/ua-parser.min.js"></script> <!-- user agent parser -->
 	<script src="samples.js"></script> <!-- XHR request, Oligo example code -->
 	<script src="port-definitions.js"></script>

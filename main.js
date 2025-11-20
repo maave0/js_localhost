@@ -297,3 +297,19 @@ function fingerprint() {
 
 document.addEventListener('DOMContentLoaded', eventListeners);
 document.addEventListener('DOMContentLoaded', fingerprint);
+
+// JavaScript for tab functionality
+const tabs = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        // selected tab gets a color highlight
+        tabs.forEach(t => t.classList.remove('tab-btn-selected'));
+        tab.classList.add('tab-btn-selected');
+
+        // display tab content
+        contents.forEach(content => content.classList.add('hidden'));
+        document.getElementById(tab.dataset.tab).classList.remove('hidden');
+    });
+});

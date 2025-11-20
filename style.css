@@ -1,6 +1,28 @@
+.hidden {
+    display: none !important;
+}
+
+.tabs {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.tab-btn {
+    padding: 10px 24px;
+    font-size: 1em;
+    border-radius: 4px;
+    border: 1px solid; /* Added thinner border */
+    cursor: pointer;
+}
+.tab-btn-selected {
+    background: #333;
+    color: #fff;
+}
+
 .get-url-btn {
     margin-top: 10px;
 }
+
 .api-url-input {
     margin-top: 18px;
     margin-bottom: 0;
@@ -14,10 +36,14 @@
     margin-left: auto;
     margin-right: auto;
 }
-.hidden {
-    display: none !important;
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 0;
 }
-body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+
 #log-container {
     background: #222;
     color: #eee;
@@ -28,13 +54,16 @@ body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 
     border-radius: 4px;
     min-height: 300px;
     max-height: 400px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     font-size: 1.1em;
     line-height: 1.5;
     overflow-y: auto;
     scroll-behavior: smooth;
 }
-.log-line { margin-bottom: 6px; }
+
+.log-line {
+    margin-bottom: 6px;
+}
 
 .main-header {
     text-align: center;
@@ -60,6 +89,7 @@ body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 
     cursor: pointer;
     transition: background 0.2s;
 }
+
 .add-btn:hover {
     background: #444;
 }

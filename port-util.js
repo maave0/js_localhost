@@ -1,4 +1,6 @@
 var localAddress = "localhost";
+var cors = true;
+var corsMode = "cors";
 
 // Calls checkPortResponseTime with the port from input and logs the result
 function checkPort() {
@@ -227,7 +229,7 @@ function checkMetro() {
         const url = `http://${localAddress}:8081${endpoint.path}`;
         const options = {
             method: endpoint.method,
-            mode: 'no-cors',
+            mode: corsMode,
         };
 
         if (endpoint.method === 'POST' && endpoint.body) {
@@ -267,7 +269,8 @@ function checkMetroOpenUrl() {
     const options = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url }),
+        mode: corsMode
     };
 
     fetch(fullUrl, options)
@@ -410,6 +413,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (radio.checked) {
             localAddress = radio.value;
             console.log(`localAddress initialized to: ${localAddress}`);
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const radioButtons = document.querySelectorAll('input[name="cors"]');
+
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            cors = (event.target.value === 'true');
+            corsMode = cors ? 'cors' : 'no-cors';
+            console.log(`CORS: ${cors}, corsMode: ${corsMode}`);
+        });
+
+        // Set the variables immediately if the radio is checked
+        if (radio.checked) {
+            cors = (radio.value === 'true');
+            corsMode = cors ? 'cors' : 'no-cors';
+            console.log(`CORS: ${cors}, corsMode: ${corsMode}`);
         }
     });
 });
