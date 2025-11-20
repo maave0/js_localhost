@@ -1,4 +1,4 @@
-var localAddress = "127.0.0.1";
+var localAddress = "localhost";
 
 // Calls checkPortResponseTime with the port from input and logs the result
 function checkPort() {
@@ -395,3 +395,21 @@ function filterOutliers(collection) {
 
     return sortedCollection.filter(x => (x >= minValue) && (x <= maxValue));
 }
+
+// Added event listener to update localAddress when radio button changes
+document.addEventListener('DOMContentLoaded', () => {
+    const radioButtons = document.querySelectorAll('input[name="host"]');
+
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            localAddress = event.target.value;
+            console.log(`localAddress updated to: ${localAddress}`);
+        });
+
+        // Set the variable immediately if the radio is checked
+        if (radio.checked) {
+            localAddress = radio.value;
+            console.log(`localAddress initialized to: ${localAddress}`);
+        }
+    });
+});
